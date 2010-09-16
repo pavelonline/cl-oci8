@@ -1,0 +1,14 @@
+Main purpose of the project is to reflect Oracle Call Interface to Common Lisp
+
+Postulates:
+ - foreign resources and handles have to cleaned and freed by
+   the library
+ - this project is only reflection. OCI function have to reflects
+   to the library function one-to-one (except handle allocation and freeing)
+ - the library cant contain functions not present in OCI.
+
+License is BSD.
+
+Regards,
+Pavel G. Koukoushkin
+k.pavel.g@gmail.com
