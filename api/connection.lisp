@@ -43,8 +43,11 @@
                           password (length password)
                           mode)
       (values
-       session-pool-handle
-       (foreign-string-to-lisp (mem-ref pool-name '(:pointer :string)) :max-chars (mem-ref pool-name-len 'sb4))))))
+       (setf *session-pool*
+             session-pool-handle)
+       (setf *session-pool-name*
+             (foreign-string-to-lisp (mem-ref pool-name '(:pointer :string))
+                                     :max-chars (mem-ref pool-name-len 'sb4)))))))
 
 
 (defcenum spd-options

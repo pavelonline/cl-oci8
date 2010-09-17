@@ -208,9 +208,15 @@
   (errhp handle))
 
 (defun attr-get (handle oci-attrtype attrtype &key (error-handle *error*))
-  (with-foreign-object (retval attrtype)
-    (attr-get% handle (handle-type handle) retval (null-pointer) oci-attrtype error-handle)
-    (mem-ref retval attrtype)))
+  (with-foreign-objects ((retval attrtype)
+                         (countp 'ub4))
+    (setf (mem-ref countp 'ub4) 0)
+    (attr-get% handle (handle-type handle) retval countp oci-attrtype error-handle)
+    (cond
+      ((eql :pointer attrtype)
+       (values
+        (foreign-string-to-lisp (mem-ref retval :pointer) :count (mem-ref countp 'ub4))))
+      (t (mem-aref retval attrtype)))))
       
 (defcfun ("OCIParamGet" param-get%) result
   (handle handle)

@@ -152,6 +152,8 @@
    (count :initarg :count
           :reader elt-count
           :initform 1)
+   (sqlt :initarg :sqlt
+         :reader sqlt)
    (rcodep :initform (foreign-alloc 'ub2 :initial-element 0) :reader rcodep)
    (rlenp :initform (foreign-alloc 'ub2 :initial-element 0) :reader rlenp)))
 
@@ -165,7 +167,7 @@
 
 (defgeneric ind (res &optional index)
   (:method ((res defined-resource) &optional (index 0))
-    (mem-ref (indp res) 'ub2 index)))
+    (mem-ref (indp res) 'ind index)))
 
 (defgeneric data (res &optional index)
   (:method ((res defined-resource) &optional (index 0))
@@ -173,13 +175,15 @@
 
 (defgeneric pretty-data (res &optional index)
   (:method ((res defined-resource) &optional (index 0))
-    (if (size res)
-        (foreign-string-to-lisp
-         (datap res)
-         :offset (* index (size res))
-         :max-chars (size res))
-        (mem-ref (datap res) (data-type res)
-                 index))))
+    (unless (eql (ind res index) :ind-null)
+      (convert-from (sqlt res) (data-type res) (size res) index (datap res)))))
+
+(defsetf pretty-data (res) (data)
+  `(if ,data
+       (progn
+         (setf (mem-ref (indp ,res) 'ind) :ind-notnull)
+         (convert-to (sqlt ,res) (data-type ,res) (size ,res) ,data (datap ,res)))
+       (setf (mem-ref (indp ,res) 'ind) :ind-null)))
 
 (defmethod initialize-instance :after ((self defined-resource)
                                        &key
@@ -190,12 +194,12 @@
                                   (or (size self)
                                       (foreign-type-size (data-type self)))
                                   (elt-count self))))
-        (ind-ptr (foreign-alloc 'sb2 :count (elt-count self)))
+        (ind-ptr (foreign-alloc 'ind :count (elt-count self)))
         (rcodep (rcodep self))
         (rlenp (rlenp self)))
     (loop for i from 0 to (1- (elt-count self))
          do
-         (setf (mem-ref ind-ptr 'sb2 i) 0))
+         (setf (mem-ref ind-ptr 'ind i) :ind-notnull))
     (setf (slot-value self 'datap)
           data-ptr)
     (setf (slot-value self 'indp)
@@ -208,7 +212,7 @@
 
 (defun define-by-pos (stmthp position type sqlt &key (count 1) (mode :default) size (error-handle *error*))
   (let ((defnpp (make-instance 'handle :handle-type :define)))
-    (let ((def-res (make-instance 'defined-resource :count count :size size :type type)))
+    (let ((def-res (make-instance 'defined-resource :count count :size size :type type :sqlt sqlt)))
       (define-by-pos% stmthp defnpp error-handle
                       position
                       (datap def-res)
@@ -246,6 +250,7 @@
   (let ((resource (make-instance 'defined-resource
                                  :count count
                                  :size size
+                                 :sqlt sqlt
                                  :type type))
         (bindhpp (make-instance 'handle :handle-type :bind)))
     (bind-by-pos% stmthp bindhpp error-handle position 
