@@ -134,7 +134,7 @@
   (rcodep :pointer)
   (mode bind-define-options))
 
-(defcenum ind
+(defcenum (ind sb2)
   (:ind-notnull 0) ;  not null 
   (:ind-null -1) ;  null 
   (:ind-badnull -2) ;  bad null 

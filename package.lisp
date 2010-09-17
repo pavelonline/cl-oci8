@@ -1,10 +1,14 @@
 (defpackage :oci8
   (:use :cffi :cl)
+  (:export :no-data)
   (:export :create-statement
            :bind-by-pos
+           :define-by-pos
            :pretty-data
            :statement-execute
+           :statement-fetch
            )
+  (:export :pretty-data)
   (:export :create-environment
            :make-error-handle)
   (:export :session-pool-create

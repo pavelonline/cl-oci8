@@ -66,12 +66,19 @@
                            (error-get *error* :error))
                          (result c))))))
 
+(define-condition no-data (oci-error)
+  ()
+  (:default-initargs :result :no-data))
+
 (defmethod translate-from-foreign (value (type result-type))
-  (if (or
-       (zerop value)
-       (eql value :success))
-      (foreign-enum-keyword 'oci-result value)
-      (error 'oci-error :result (foreign-enum-keyword 'oci-result value))))
+  (let ((kwd-code (foreign-enum-keyword 'oci-result value)))
+    (case kwd-code
+      (:success
+       :success)
+      (:no-data
+       (error 'no-data))
+      (t
+       (error 'oci-error :result (foreign-enum-keyword 'oci-result value))))))
 
 (defcfun ("OCIHandleFree" handle-free-ptr) result
   (hndl :pointer)
