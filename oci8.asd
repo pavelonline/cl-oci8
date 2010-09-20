@@ -9,7 +9,8 @@
             ((:file "main")
              (:file "connection" :depends-on ("main"))
              (:file "statement" :depends-on ("main"))
-             (:file "bind-define" :depends-on ("main"))))))
+             (:file "bind-define" :depends-on ("main" "datatypes"))
+             (:file "datatypes" :depends-on ("main"))))))
                                  
   
                  
