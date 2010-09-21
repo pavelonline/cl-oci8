@@ -33,7 +33,7 @@
 
 (defmethod convert-to ((sqlt (eql :sqlt-str)) type size (data string) pointer)
   (with-foreign-string (tmp-str data)
-    (loop for i from 0
+    (loop for i from 0 to (1- size)
        for ch = (mem-aref tmp-str :char i)
        while (not (zerop ch))
        do (setf (mem-aref pointer :char i) ch))))
