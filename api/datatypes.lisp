@@ -15,7 +15,9 @@
         (- (d[] 1) 100)))))
 
 (defmethod convert-from ((sqlt (eql :sqlt-str)) type size index data)
-  (foreign-string-to-lisp data :offset (* index size) :max-chars size))
+  (foreign-string-to-lisp data :offset (* index size) :max-chars size)
+  (loop for i from (* index size) to (1- (+ (* index size) size)) do
+       (setf (mem-aref data type i) 0)))
 
 (defmethod convert-from ((sqlt (eql :sqlt-int)) type size index data)
   (mem-aref data type index))
