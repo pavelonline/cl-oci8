@@ -21,7 +21,11 @@
 
 (defmethod initialize-instance :after ((handle handle) &key &allow-other-keys)
   (let* ((pointer (foreign-alloc :pointer)))
-     (setf (slot-value handle 'handlpp) pointer)))
+		(setf (slot-value handle 'handlpp) pointer)
+		(tg:finalize handle
+								 (lambda ()
+									 (foreign-free pointer)
+									 (format t "Finalized ~a~%" pointer)))))
 
 (define-foreign-type handle-type ()
   ()
