@@ -69,12 +69,16 @@
 
 (defmethod initialize-instance :after ((handle common-handle) &key (parent-handle *environment*)
                                        &allow-other-keys)
-  (let ((type (handle-type handle))
-        (pointer-data (mem-ref (p-pointer handle) :pointer)))
+  (let ((type (handle-type handle)))
     (handle-alloc parent-handle handle type 0 (null-pointer))
-    (tg:finalize handle
-                 (lambda ()
-                   (ignore-errors
-                     (handle-free-ptr pointer-data
-                                      type))))))
+		(let ((pointer-data (mem-ref (p-pointer handle) :pointer)))
+			(tg:finalize handle
+									 (lambda ()
+										 (format t "Freeing ~a of ~a"
+														 pointer-data type)
+										 (handler-case
+												 (handle-free-ptr pointer-data
+																					type)
+											 (error (err)
+												 (print err))))))))
 
