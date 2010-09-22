@@ -15,9 +15,7 @@
         (- (d[] 1) 100)))))
 
 (defmethod convert-from ((sqlt (eql :sqlt-str)) type size index data)
-  (foreign-string-to-lisp data :offset (* index size) :max-chars size)
-  (loop for i from (* index size) to (1- (+ (* index size) size)) do
-       (setf (mem-aref data type i) 0)))
+  (foreign-string-to-lisp data :offset (* index size) :max-chars size))
 
 (defmethod convert-from ((sqlt (eql :sqlt-int)) type size index data)
   (mem-aref data type index))
@@ -37,8 +35,8 @@
   (with-foreign-string (tmp-str data)
     (loop for i from 0 to (1- size)
        for ch = (mem-aref tmp-str :char i)
-       while (not (zerop ch))
-       do (setf (mem-aref pointer :char i) ch))))
+       do (setf (mem-aref pointer :char i) ch)
+       while (not (zerop ch)))))
 
 (defmethod convert-to ((sqlt (eql :sqlt-dat)) type size (data integer) pointer)
   (multiple-value-bind (sec min hour day month year)
