@@ -74,8 +74,6 @@
 		(let ((pointer-data (mem-ref (p-pointer handle) :pointer)))
 			(tg:finalize handle
 									 (lambda ()
-										 (format t "Freeing ~a of ~a"
-														 pointer-data type)
 										 (handler-case
 												 (handle-free-ptr pointer-data
 																					type)
