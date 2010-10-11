@@ -24,8 +24,7 @@
 		(setf (slot-value handle 'handlpp) pointer)
 		(tg:finalize handle
 								 (lambda ()
-									 (foreign-free pointer)
-									 (format t "Finalized ~a~%" pointer)))))
+									 (foreign-free pointer)))))
 
 (define-foreign-type handle-type ()
   ()
