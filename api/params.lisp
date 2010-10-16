@@ -197,6 +197,15 @@
   (:attr-ora-debug-jdwp 302) ;  ora-debug-jdwp attribute 
   (:attr-edition 288) ;  ora-edition 
   (:attr-reserved-14 303) ;  reserved 
+  (:attr-spool-timeout 308) ;  session timeout 
+  (:attr-spool-getmode 309) ;  session get mode 
+  (:attr-spool-busy-count 310) ;  busy session count 
+  (:attr-spool-open-count 311) ;  open session count 
+  (:attr-spool-min 312) ;  min session count 
+  (:attr-spool-max 313) ;  max session count 
+  (:attr-spool-incr 314) ;  session increment count 
+  (:attr-spool-stmtcachesize 208) ; stmt cache size of pool  
+  (:attr-spool-auth 460) ;  auth handle on pool handle
   )
 
 (defcfun ("OCIAttrGet" attr-get%) result
@@ -217,6 +226,19 @@
        (values
         (foreign-string-to-lisp (mem-ref retval :pointer) :count (mem-ref countp 'ub4))))
       (t (mem-aref retval attrtype)))))
+
+(defcfun ("OCIAttrSet" attr-set%) result
+  (handle handle)
+  (htype htype)
+  (pointer :pointer)
+  (size ub4)
+  (attrtype common-attr)
+  (errhp handle))
+
+(defun attr-set (handle oci-attrtype attrtype data &key (error-handle *error*))
+  (with-foreign-object (var attrtype)
+    (setf (mem-ref var attrtype) data)
+    (attr-set% handle (handle-type handle) var (foreign-type-size attrtype) oci-attrtype error-handle)))
       
 (defcfun ("OCIParamGet" param-get%) result
   (handle handle)

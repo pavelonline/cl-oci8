@@ -11,10 +11,13 @@
   (:export :pretty-data)
   (:export :create-environment
            :make-error-handle)
-  (:export :session-pool-create
+  (:export :getmode-session-pool-values
+           :session-pool-create
+           :session-pool-destroy
            :logon2
            :logoff)
   (:export :attr-get
+           :attr-set
            :param-get)
   (:export :*service-context*
            :*error*
