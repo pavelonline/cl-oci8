@@ -36,7 +36,8 @@
     (loop for i from 0 to (1- size)
        for ch = (mem-aref tmp-str :char i)
        do (setf (mem-aref pointer :char i) ch)
-       while (not (zerop ch)))))
+       while (not (zerop ch)))
+    (setf (mem-aref pointer :char (1- size)) 0)))
 
 (defmethod convert-to ((sqlt (eql :sqlt-dat)) type size (data integer) pointer)
   (multiple-value-bind (sec min hour day month year)
