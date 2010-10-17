@@ -25,6 +25,14 @@
                          size index data)
   (mem-aref data type index))
 
+(defun crop-string (string size)
+  (loop for i = (length string) then (1- i)
+     while (< size (length (flexi-streams:string-to-octets string
+                                                           :external-format *default-foreign-encoding*
+                                                           :end i)))
+     while (plusp i)
+     finally (return (subseq string 0 i))))
+
 
 (defgeneric convert-to (sqlt type size data pointer))
 
@@ -32,12 +40,11 @@
   (setf (mem-ref pointer type) data))
 
 (defmethod convert-to ((sqlt (eql :sqlt-str)) type size (data string) pointer)
-  (with-foreign-string (tmp-str data)
+  (with-foreign-string (tmp-str (crop-string data (1- size)))
     (loop for i from 0 to (1- size)
        for ch = (mem-aref tmp-str :char i)
        do (setf (mem-aref pointer :char i) ch)
-       while (not (zerop ch)))
-    (setf (mem-aref pointer :char (1- size)) 0)))
+       while (not (zerop ch)))))
 
 (defmethod convert-to ((sqlt (eql :sqlt-dat)) type size (data integer) pointer)
   (multiple-value-bind (sec min hour day month year)
