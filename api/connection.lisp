@@ -37,8 +37,7 @@
                             &key
                             (environment *environment*)
                             (error-handle *error*)
-                            (mode :homogenous)
-                            (get-session-behavior :nowait))
+                            (mode :homogenous))
   (let ((session-pool-handle (make-instance 'common-handle :handle-type :session-pool :parent-handle environment)))
     (with-foreign-objects ((pool-name '(:pointer :string))
                            (pool-name-len 'sb4))
@@ -49,7 +48,6 @@
                           userid (length userid)
                           password (length password)
                           mode)
-      (attr-set session-pool-handle :attr-spool-getmode :uint32 (cffi:foreign-enum-value 'getmode-session-pool-values get-session-behavior))
       (values
        (setf *session-pool*
              session-pool-handle)
