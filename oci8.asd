@@ -1,5 +1,5 @@
 (asdf:defsystem :oci8
-  :depends-on ("trivial-garbage" "cffi")
+  :depends-on ("trivial-garbage" "cffi" "flexi-streams")
   :components
   ((:file "package")
    (:file "handle" :depends-on ("package"))
