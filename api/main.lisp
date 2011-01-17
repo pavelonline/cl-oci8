@@ -31,6 +31,9 @@
   (:parameter 53))
 
 
+(defcenum dtype
+  (:timestamp 68))
+
 
 (define-foreign-type result-type ()
   ()
@@ -90,6 +93,17 @@
     (type htype)
     (xtramem_sz size_t)
     (usrmempp :pointer))
+
+(defcfun ("OCIDescriptorAlloc" descriptor-alloc) result
+  (parent handle)
+  (target handle-pointer)
+  (type dtype)
+  (xtramem_sz size_t)
+  (usrmempp :pointer))
+
+(defcfun ("OCIDescriptorFree" descriptor-free-ptr) result
+  (target :pointer)
+  (type dtype))
 
 (defcenum env-create-options
   (:threaded #x00000001) ;  appl. in threaded environment 

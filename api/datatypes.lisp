@@ -25,6 +25,10 @@
                          size index data)
   (mem-aref data type index))
 
+(defmethod convert-from ((sqlt (eql :sqlt-timestamp))
+                         type size index data)
+  (dt-to-local-time data))
+
 (defun crop-string (string size)
   (loop for i = (length string) then (1- i)
      while (< size (length (flexi-streams:string-to-octets string
@@ -60,3 +64,5 @@
       ([] 6 (1+ sec)))))
                
 
+(defmethod convert-to ((sqlt (eql :sqlt-timestamp)) type size (data local-time:timestamp) (descriptor descriptor))
+  (dt-set-datetime data descriptor))

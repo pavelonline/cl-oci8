@@ -157,6 +157,9 @@
    (rcodep :reader rcodep)
    (rlenp :reader rlenp)))
 
+(defclass descriptor-defined-resource (defined-resource)
+  ((descriptor)))
+
 (defgeneric rcode (res &optional index)
   (:method ((res defined-resource) &optional index)
     (mem-aref (rcodep res) 'ub2 index)))
@@ -176,14 +179,37 @@
 (defgeneric pretty-data (res &optional index)
   (:method ((res defined-resource) &optional (index 0))
     (unless (eql (ind res index) :ind-null)
-      (convert-from (sqlt res) (data-type res) (size res) index (datap res)))))
+      (convert-from (sqlt res) (data-type res) (size res) index (datap res))))
+  (:method ((res descriptor-defined-resource) &optional (index 0))
+    (unless (eql (ind res index) :ind-null)
+      (convert-from (sqlt res) (data-type res) (size res) index (nth index
+                                                                     (slot-value res 'descriptor))))))
 
 (defsetf pretty-data (res) (data)
   `(if ,data
        (progn
          (setf (mem-ref (indp ,res) 'ind) :ind-notnull)
-         (convert-to (sqlt ,res) (data-type ,res) (size ,res) ,data (datap ,res)))
+         (convert-to (sqlt ,res) (data-type ,res) (size ,res) ,data (first-data-pointer ,res)))
        (setf (mem-ref (indp ,res) 'ind) :ind-null)))
+
+(defmethod first-data-pointer ((res defined-resource))
+  (datap res))
+
+(defmethod first-data-pointer ((res descriptor-defined-resource))
+  (car (slot-value res 'descriptor)))
+       
+  
+
+(defmethod initialize-instance :after ((self descriptor-defined-resource)
+                                       &key descriptor-type &allow-other-keys)
+  (let ((desc (loop repeat (elt-count self) collect (make-instance 'descriptor :descriptor-type descriptor-type)))
+        (data-ptr (slot-value self 'datap)))
+    (setf (slot-value self 'descriptor) desc)
+    (loop for i from 0 below (elt-count self)
+         for descriptor in desc do
+         (setf (mem-aref data-ptr 'handle) descriptor))))
+    
+
 
 (defmethod initialize-instance :after ((self defined-resource)
                                        &key
@@ -214,9 +240,17 @@
                         (foreign-free rcodep)
                         (foreign-free rlenp)))))
 
-(defun define-by-pos (stmthp position type sqlt &key (count 1) (mode :default) size (error-handle *error*))
+(defun define-by-pos (stmthp position type sqlt &key (count 1) (mode :default) size (error-handle *error*)
+                      descriptor-type)
   (let ((defnpp (make-instance 'handle :handle-type :define)))
-    (let ((def-res (make-instance 'defined-resource :count count :size size :type type :sqlt sqlt)))
+    (let ((def-res (if descriptor-type
+                       (make-instance 'descriptor-defined-resource
+                                      :count count
+                                      :size size 
+                                      :sqlt sqlt
+                                      :type type
+                                      :descriptor-type descriptor-type)
+                       (make-instance 'defined-resource :count count :size size :type type :sqlt sqlt))))
       (define-by-pos% stmthp defnpp error-handle
                       position
                       (datap def-res)
@@ -250,12 +284,20 @@
                     (count 1)
                     size
                     (mode :default)
-                    (error-handle *error*))
-  (let ((resource (make-instance 'defined-resource
-                                 :count count
-                                 :size size
-                                 :sqlt sqlt
-                                 :type type))
+                    (error-handle *error*)
+                    descriptor-type)
+  (let ((resource (if descriptor-type 
+                      (make-instance 'descriptor-defined-resource
+                                     :count count
+                                     :size size
+                                     :sqlt sqlt
+                                     :type type
+                                     :descriptor-type descriptor-type)
+                      (make-instance 'defined-resource
+                                     :count count
+                                     :size size
+                                     :sqlt sqlt
+                                     :type type)))
         (bindhpp (make-instance 'handle :handle-type :bind)))
     (bind-by-pos% stmthp bindhpp error-handle position 
                   (datap resource)

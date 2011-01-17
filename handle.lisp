@@ -79,3 +79,21 @@
 											 (error (err)
 												 (print err))))))))
 
+(defclass descriptor (handle)
+  ((descriptor-type :initarg :descriptor-type
+                    :reader descriptor-type))
+  (:default-initargs :handle-type :descriptor))
+
+(defmethod initialize-instance :after ((self descriptor) &key (parent-handle *environment*))
+  (let ((desc-type (descriptor-type  self)))
+    (descriptor-alloc parent-handle self desc-type 0 (null-pointer))
+		(let ((pointer-data (mem-ref (p-pointer self) :pointer)))
+			(tg:finalize self
+									 (lambda ()
+										 (handler-case
+												 (descriptor-free-ptr pointer-data
+                                              desc-type)
+											 (error (err)
+												 (print err))))))))
+    
+
