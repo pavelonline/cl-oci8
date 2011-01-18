@@ -1,6 +1,6 @@
 (in-package :oci8)
 
-(defcfun ("OCIDateTimeConstruct" dt-construct%) result
+(defcfun ("OCIDateTimeConstruct" dt-construct) result
   (parent handle)
   (err handle)
   (target handle)
